@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-shell space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="premium-breadcrumb" aria-label="Breadcrumb">
+        <ol>
+            <li class="inline-flex items-center">
+                <a href="{{ url_for('main.index') }}">Home</a>
+            </li>
+            <li><span>/</span></li>
+            <li class="inline-flex items-center">
+                <a href="#">Dashboards</a>
+            </li>
+            <li><span>/</span></li>
+            <li aria-current="page">
+                <span>{{ dashboard.title }}</span>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="glass-panel header-panel">
+        <div>
+            <h2>{{ dashboard.title }}</h2>
+            <div class="meta">
+                <span class="flex items-center"><span class="mr-1">📍</span> {{ dashboard.country }}</span>
+                <span class="flex items-center"><span class="mr-1">🏷️</span> {{ dashboard.category }}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="start-story-mode" class="btn btn-gradient ripple">
+                <span class="mr-2">✨</span>Start Story Mode
+            </button>
+            <button id="generate-insight" class="btn btn-ghost ripple">
+                <span class="mr-2 text-lg">🤖</span>AI Insight
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard Container: Fixed Aspect Ratio 16:9 for Power BI -->
+    <div class="powerbi-shell" id="dashboard-container">
+        <!-- Power BI Iframe -->
+        <iframe 
+            id="powerbi-frame"
+            title="{{ dashboard.title }}" 
+            class="absolute inset-0 w-full h-full"
+            src="{{ dashboard.embed_url }}" 
+            frameborder="0" 
+            allowFullScreen="true">
+        </iframe>
+        
+        <!-- Story Mode Overlay (Hidden by default) -->
+        <div id="story-overlay" class="story-overlay hidden">
+            <div class="story-card" id="story-card">
+                <h3 id="story-title">Story Title</h3>
+                <p id="story-text">Narrative text goes here...</p>
+                <div class="story-controls">
+                    <button id="story-prev" class="btn btn-ghost">← Previous</button>
+                    <div class="story-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <button id="story-next" class="btn btn-gradient">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Insights & Recommendations -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="glass-panel section-panel">
+                <h3>
+                    <span class="badge">AI</span> 
+                    Key Insights
+                </h3>
+                <div id="insights-container" class="insight-grid">
+                    {% for insight in dashboard.insights %}
+                        <div class="insight-card">
+                            <p>{{ insight.content }}</p>
+                            <span>{{ insight.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    {% else %}
+                        <div class="insight-empty">
+                            Click "AI Insight" to generate analysis for this dashboard.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="glass-panel section-panel">
+                <h3>You May Also Like</h3>
+                <div class="recommend-grid">
+                    {% for rec in recommendations %}
+                    <div class="recommend-card" onclick="window.location.href='{{ url_for('main.dashboard_view', id=rec.id) }}'">
+                        <div class="recommend-icon">📊</div>
+                        <h4>{{ rec.title }}</h4>
+                        <p>{{ rec.country }}</p>
+                    </div>
+                    {% else %}
+                    <div class="recommend-empty">
+                        View more dashboards to get personalized recommendations!
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Feedback -->
+        <div>
+            <div class="glass-panel feedback-panel sticky top-24">
+                <h3>
+                    <span class="mr-2">💬</span> Feedback
+                </h3>
+                <div class="space-y-4">
+                    <textarea id="feedback-input" rows="4" class="feedback-input" placeholder="Spot a bug? Have a suggestion? We'd love to hear from you."></textarea>
+                    <button id="submit-feedback" class="btn btn-primary full ripple">
+                        <span>Submit Feedback</span>
+                    </button>
+                </div>
+                <p class="panel-note">AI analyzes your feedback instantly to categorize it.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    // Story Mode Logic
+    let storyScript = [];
+    let currentStep = 0;
+    
+    document.getElementById('start-story-mode').addEventListener('click', function() {
+        fetch('/api/get_story', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ dashboard_id: {{ dashboard.id }} })
+        })
+        .then(res => res.json())
+        .then(data => {
+            storyScript = data.script;
+            currentStep = 0;
+            showStoryStep(0);
+            
+            const overlay = document.getElementById('story-overlay');
+            const card = document.getElementById('story-card');
+            overlay.classList.remove('hidden');
+            gsap.to(card, {y: 0, opacity: 1, duration: 0.8, ease: "power2.out"});
+        });
+    });
+    
+    function showStoryStep(index) {
+        if (index < 0 || index >= storyScript.length) return;
+        
+        const step = storyScript[index];
+        document.getElementById('story-title').innerText = step.title;
+        document.getElementById('story-text').innerText = step.text;
+        
+        // Text-to-Speech
+        const utterance = new SpeechSynthesisUtterance(step.text);
+        window.speechSynthesis.cancel(); // Stop previous
+        window.speechSynthesis.speak(utterance);
+        
+        currentStep = index;
+    }
+    
+    document.getElementById('story-next').addEventListener('click', () => {
+        if (currentStep < storyScript.length - 1) {
+            showStoryStep(currentStep + 1);
+        } else {
+            // End
+            document.getElementById('story-overlay').classList.add('hidden');
+            window.speechSynthesis.cancel();
+        }
+    });
+    
+    document.getElementById('story-prev').addEventListener('click', () => {
+        showStoryStep(currentStep - 1);
+    });
+
+    // AI Insights Logic
+    document.getElementById('generate-insight').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span>⏳</span> Analyzing...';
+        btn.disabled = true;
+        
+        fetch('/api/generate_insight', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ dashboard_id: {{ dashboard.id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (data.status === 'success') {
+                const container = document.getElementById('insights-container');
+                // Prepend new insights
+                data.insights.forEach(insight => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-4 rounded shadow-sm border-l-4 border-blue-500 animate-fade-in-up';
+                    div.innerHTML = `
+                        <p class="text-gray-700">${insight.content}</p>
+                        <span class="text-xs text-gray-400 block mt-2">Just now</span>
+                    `;
+                    container.insertBefore(div, container.firstChild);
+                });
+                alert("New AI insights generated!");
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+             btn.innerHTML = originalText;
+             btn.disabled = false;
+             alert("Failed to generate insights.");
+        });
+    });
+
+    document.getElementById('submit-feedback').addEventListener('click', function() {
+        const content = document.getElementById('feedback-input').value;
+        if(!content) return;
+
+        fetch('/api/feedback', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                dashboard_id: {{ dashboard.id }},
+                content: content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.reply);
+            document.getElementById('feedback-input').value = '';
+        });
+    });
+</script>
+{% endblock %}

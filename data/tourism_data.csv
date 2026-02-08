@@ -1,0 +1,8 @@
+country_code,country,region,year,month,arrivals,spending_usd,spending_eur,spending_inr,tourism_type,holiday_count
+FR,France,Europe,2023,June,5000000,1200,1100,98000,Leisure,5
+US,USA,North America,2023,July,8000000,2500,2300,205000,Business,2
+JP,Japan,Asia,2023,April,3000000,1800,1650,148000,Culture,3
+IN,India,Asia,2023,December,2000000,800,730,65000,Heritage,4
+GB,United Kingdom,Europe,2023,August,4500000,1500,1380,123000,Leisure,3
+IT,Italy,Europe,2023,May,4800000,1300,1200,106000,Culture,2
+ES,Spain,Europe,2023,July,6000000,1100,1000,90000,Beach,1

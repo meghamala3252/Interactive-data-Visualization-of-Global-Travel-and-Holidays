@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Tourism AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="site-body">
+    <div class="scenic-backdrop" aria-hidden="true">
+        <span class="orb orb-a"></span>
+        <span class="orb orb-b"></span>
+        <span class="orb orb-c"></span>
+        <div class="gradient-veil"></div>
+        <div class="world-map-layer">
+            <div class="map-grid"></div>
+            <div class="map-glow"></div>
+            <div class="map-dots"></div>
+        </div>
+    </div>
+
+    <nav class="app-nav glass-nav">
+        <div class="nav-inner">
+            <div class="brand-mark">
+                <a href="{{ url_for('main.index') }}" class="brand-link">
+                    <div class="brand-icon">T</div>
+                    <div class="brand-copy">
+                        <span class="brand-title">Tourism AI</span>
+                        <span class="brand-tagline">Global Intelligence</span>
+                    </div>
+                </a>
+            </div>
+            <div class="nav-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('main.add_dashboard') }}" class="btn btn-primary">+ New Dashboard</a>
+                    <a href="{{ url_for('main.itinerary') }}" class="nav-link">Planner</a>
+                    <a href="{{ url_for('main.compare') }}" class="nav-link">Compare</a>
+                    <a href="{{ url_for('main.timeline') }}" class="nav-link">Timeline</a>
+                    <a href="{{ url_for('main.profile') }}" class="nav-link">Profile</a>
+                    <span class="nav-divider" aria-hidden="true"></span>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link critical">Log Out</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link emphasised">Log In</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-gradient">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+        <div class="flash-stack">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-grid">
+                    {% for category, message in messages %}
+                        <div class="flash-card {{ 'is-success' if category == 'success' else 'is-error' if category == 'error' else 'is-info' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+
+    <!-- Chatbot Widget -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <!-- Chat Window -->
+        <div id="chat-window" class="chat-window hidden">
+            <div class="chat-header">
+                <span class="font-bold">AI Assistant</span>
+                <button id="close-chat" class="close-chat">&times;</button>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <div class="chat-bubble">
+                    <p>Hello! Ask me anything about tourism trends.</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <div class="chat-field">
+                    <div class="chat-input-shell">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <button id="send-chat">
+                            <span>Send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Toggle Button -->
+        <button id="toggle-chat" class="chat-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    {% block scripts %}{% endblock %}
+    <script>
+        // Global Chatbot Logic
+        const chatWindow = document.getElementById('chat-window');
+        const toggleChat = document.getElementById('toggle-chat');
+        const closeChat = document.getElementById('close-chat');
+        const chatInput = document.getElementById('chat-input');
+        const sendChat = document.getElementById('send-chat');
+        const chatMessages = document.getElementById('chat-messages');
+
+        toggleChat.addEventListener('click', () => {
+            chatWindow.classList.remove('hidden');
+            toggleChat.classList.add('hidden');
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            toggleChat.classList.remove('hidden');
+        });
+
+        function appendMessage(text, isUser) {
+            const div = document.createElement('div');
+            div.className = isUser ? "chat-bubble user" : "chat-bubble";
+            div.innerHTML = `<p>${text}</p>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        sendChat.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            appendMessage(msg, true);
+            chatInput.value = '';
+
+            // Call API
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                appendMessage(data.response, false);
+            });
+        }
+    </script>
+</body>
+</html>

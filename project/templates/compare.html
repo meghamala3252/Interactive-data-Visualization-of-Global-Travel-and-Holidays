@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="compare-shell">
+    <div class="compare-hero compare-hero--compact">
+        <div>
+            <p class="eyebrow">Visual Intelligence</p>
+            <h1>Dashboard Comparison Lab</h1>
+            <p class="compare-lead">
+                Pair dashboards, surface the deltas, and brief stakeholders faster.
+            </p>
+            <div class="compare-chips">
+                <span>Overlay ready</span>
+                <span>Variance pinpoints</span>
+                <span>AI copy blocks</span>
+            </div>
+        </div>
+        <div class="compare-meta compact">
+            <article>
+                <p class="meta-label">Sessions</p>
+                <p class="meta-value">42</p>
+            </article>
+            <article>
+                <p class="meta-label">Avg diff time</p>
+                <p class="meta-value">11s</p>
+            </article>
+        </div>
+    </div>
+
+    <div class="compare-selects compact sticky-selects">
+        <div class="compare-field">
+            <label for="dash1">Dashboard A</label>
+            <select id="dash1">
+                <option value="">Select dashboard</option>
+                {% for d in dashboards %}
+                    <option value="{{ d.embed_url }}">{{ d.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="compare-field">
+            <label for="dash2">Dashboard B</label>
+            <select id="dash2">
+                <option value="">Select dashboard</option>
+                {% for d in dashboards %}
+                    <option value="{{ d.embed_url }}">{{ d.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="compare-actions compact">
+            <button type="button" class="btn btn-primary ripple" onclick="runComparison()">Run AI Comparison</button>
+            <button type="button" class="btn btn-ghost">Export overlay</button>
+        </div>
+    </div>
+
+    <div class="compare-stage">
+        <article class="compare-panel">
+            <header>
+                <p class="panel-label">Dashboard A</p>
+                <span id="label1">Awaiting selection</span>
+            </header>
+            <div class="panel-frame">
+                <iframe id="frame1" title="Dashboard A"></iframe>
+            </div>
+        </article>
+        <article class="compare-panel">
+            <header>
+                <p class="panel-label">Dashboard B</p>
+                <span id="label2">Awaiting selection</span>
+            </header>
+            <div class="panel-frame">
+                <iframe id="frame2" title="Dashboard B"></iframe>
+            </div>
+        </article>
+    </div>
+
+    <div class="compare-summary compact">
+        <div>
+            <p class="eyebrow">AI Summary Preview</p>
+            <h2>Highlights + Anomalies</h2>
+        </div>
+        <p class="summary-copy" id="summaryCopy">
+            Select two dashboards and trigger the AI engine to receive structured variance notes.
+        </p>
+    </div>
+</section>
+
+<script>
+    const dash1 = document.getElementById('dash1');
+    const dash2 = document.getElementById('dash2');
+    const frame1 = document.getElementById('frame1');
+    const frame2 = document.getElementById('frame2');
+    const label1 = document.getElementById('label1');
+    const label2 = document.getElementById('label2');
+    const summaryCopy = document.getElementById('summaryCopy');
+
+    dash1.addEventListener('change', () => {
+        frame1.src = dash1.value || '';
+        label1.textContent = dash1.options[dash1.selectedIndex].text || 'Awaiting selection';
+    });
+
+    dash2.addEventListener('change', () => {
+        frame2.src = dash2.value || '';
+        label2.textContent = dash2.options[dash2.selectedIndex].text || 'Awaiting selection';
+    });
+
+    function runComparison() {
+        if (!dash1.value || !dash2.value) {
+            alert('Pick two dashboards to compare.');
+            return;
+        }
+        summaryCopy.textContent = 'AI is analyzing both dashboards – expect metric variance, driver notes, and anomaly flags shortly...';
+        setTimeout(() => {
+            summaryCopy.textContent = 'Variance focus: Dashboard B shows +8% YoY arrivals while Dashboard A remains flat. Watch the APAC inbound funnel; recommendation: amplify storytelling for regions pacing above forecast.';
+        }, 1500);
+    }
+</script>
+{% endblock %}

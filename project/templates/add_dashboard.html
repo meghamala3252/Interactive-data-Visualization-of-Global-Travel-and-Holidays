@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="builder-shell">
+    <div class="builder-hero">
+        <div>
+            <p class="eyebrow">New Dashboard</p>
+            <h1>Share a tourism intelligence canvas</h1>
+            <p class="builder-lead">
+                Publish curated Power BI boards with geo context, tags, and categories so the community can explore the same story.
+            </p>
+        </div>
+        <div class="builder-hint">
+            <p class="hint-title">Need help?</p>
+            <p class="hint-copy">Paste the <strong>Publish to Web</strong> link from Power BI and we’ll handle the secure embed.</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.add_dashboard') }}" class="builder-form">
+        <div class="builder-field full">
+            <label for="title">Dashboard Title</label>
+            <input id="title" name="title" type="text" placeholder="e.g. France Tourism 2024" required>
+        </div>
+
+        <div class="builder-field full">
+            <label for="embed_url">Power BI Embed URL</label>
+            <input id="embed_url" name="embed_url" type="url" placeholder="https://app.powerbi.com/view?r=..." required>
+            <p class="field-hint">Use the “Publish to web” link for public dashboards.</p>
+        </div>
+
+        <div class="builder-field">
+            <label for="country">Country</label>
+            <input id="country" name="country" type="text" placeholder="e.g. France">
+        </div>
+
+        <div class="builder-field">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option>General</option>
+                <option>Economic</option>
+                <option>Demographic</option>
+                <option>Seasonal</option>
+            </select>
+        </div>
+
+        <div class="builder-field full">
+            <label for="tags">Tags (comma separated)</label>
+            <input id="tags" name="tags" type="text" placeholder="e.g. summer, beach, revenue">
+        </div>
+
+        <div class="builder-actions">
+            <button class="btn btn-primary ripple full" type="submit">Publish Dashboard</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

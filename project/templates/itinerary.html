@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="planner-shell">
+    <div class="planner-hero">
+        <div>
+            <p class="eyebrow">AI Navigator</p>
+            <h1>Smart Travel Itinerary Planner</h1>
+            <p class="planner-lead">
+                Craft immersive journeys powered by live weather trends, budget signals, and AI-generated experiences.
+            </p>
+            <div class="planner-highlights">
+                <span>Weather-aware sequencing</span>
+                <span>Budget calibrated</span>
+                <span>Auto itinerary timeline</span>
+            </div>
+        </div>
+        <div class="planner-hero-card">
+            <p class="hero-card-label">Need inspiration?</p>
+            <p class="hero-card-value">Try “Osaka”, “Lisbon”, or “Reykjavík”</p>
+            <p class="hero-card-helper">AI will adapt the plan to your duration, budget, and season.</p>
+        </div>
+    </div>
+
+    <form method="POST" class="planner-form">
+        <div class="planner-field">
+            <label>Destination</label>
+            <input type="text" name="destination" required placeholder="e.g., Tokyo, Santorini">
+        </div>
+        <div class="planner-field">
+            <label>Travel Month</label>
+            <select name="month">
+                <option>January</option><option>February</option><option>March</option>
+                <option>April</option><option>May</option><option>June</option>
+                <option>July</option><option>August</option><option>September</option>
+                <option>October</option><option>November</option><option>December</option>
+            </select>
+        </div>
+        <div class="planner-field">
+            <label>Duration (Days)</label>
+            <input type="number" name="days" value="3" min="1" max="14">
+        </div>
+        <div class="planner-field">
+            <label>Budget Level</label>
+            <select name="budget">
+                <option>Budget</option>
+                <option>Standard</option>
+                <option>Luxury</option>
+            </select>
+        </div>
+        <div class="planner-actions">
+            <button type="submit" class="btn btn-primary ripple full">Generate Itinerary</button>
+        </div>
+    </form>
+
+    {% if result %}
+    <div class="planner-results">
+        <div class="result-header">
+            <div>
+                <p class="eyebrow">Trip Blueprint</p>
+                <h2>{{ result.destination }}</h2>
+            </div>
+            <span class="result-pill">{{ result.estimated_cost }}</span>
+        </div>
+
+        <div class="result-stats">
+            <article>
+                <span class="stat-label">Weather Pulse</span>
+                <span class="stat-value">{{ result.weather_forecast }}</span>
+            </article>
+            <article>
+                <span class="stat-label">Crowd Density</span>
+                <span class="stat-value">{{ result.crowd_level }}</span>
+            </article>
+            <article>
+                <span class="stat-label">Ideal Month</span>
+                <span class="stat-value">{{ result.best_travel_month }}</span>
+            </article>
+        </div>
+
+        <div class="day-plan">
+            {% for day in result.daily_plan %}
+            <article class="day-card">
+                <header>
+                    <p class="day-count">Day {{ day.day }}</p>
+                </header>
+                <ul>
+                    <li>🌅 <span>Morning</span> {{ day.morning }}</li>
+                    <li>☀️ <span>Afternoon</span> {{ day.afternoon }}</li>
+                    <li>🌙 <span>Evening</span> {{ day.evening }}</li>
+                </ul>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="planner-cta">
+            <button class="btn btn-primary ripple">Save Itinerary</button>
+            <button class="btn btn-ghost">Download PDF</button>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

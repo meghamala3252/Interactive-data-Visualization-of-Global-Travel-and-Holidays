@@ -1,0 +1,31 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container">
+    <h2>AI Feedback Analytics</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sentiment Overview</h5>
+                    <p>Positive: 45%</p>
+                    <p>Negative: 15%</p>
+                    <p>Neutral: 40%</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Common Topics</h5>
+                    <ul>
+                        <li>UI Glitches</li>
+                        <li>Feature Requests</li>
+                        <li>Performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

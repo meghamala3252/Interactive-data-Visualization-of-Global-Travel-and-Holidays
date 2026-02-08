@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="profile-shell">
+    <div class="profile-hero">
+        <div class="profile-hero__copy">
+            <p class="eyebrow">Explorer Passport</p>
+            <h1>Hi {{ current_user.username or 'Explorer' }}, your impact looks stellar ✨</h1>
+            <p class="profile-hero__lead">
+                Track your tourism intelligence footprint, celebrate badges, and jump back into the experiences you crafted.
+            </p>
+            <div class="profile-meta">
+                <span class="meta-chip">
+                    <strong>Role:</strong> {{ current_user.role or 'User' }}
+                </span>
+                <span class="meta-chip">
+                    <strong>Member since:</strong>
+                    {{ current_user.created_at.strftime('%b %d, %Y') if current_user.created_at else '—' }}
+                </span>
+                <span class="meta-chip {{ 'verified' if current_user.is_verified else '' }}">
+                    {{ 'Verified Account' if current_user.is_verified else 'Email pending verification' }}
+                </span>
+            </div>
+        </div>
+        <div class="profile-hero__progress">
+            <div class="progress-header">
+                <div>
+                    <p class="progress-label">Experience Progress</p>
+                    <p class="progress-value">{{ profile_progress }}%</p>
+                </div>
+                <a href="{{ url_for('main.add_dashboard') }}" class="btn btn-primary ripple">Share new dashboard</a>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ profile_progress }}%;"></div>
+            </div>
+            <p class="progress-helper">
+                Keep exploring dashboards, generating insights, and unlocking badges to reach 100%.
+            </p>
+        </div>
+    </div>
+
+    <div class="profile-stats-grid">
+        {% for stat in profile_stats %}
+            <div class="profile-stat profile-stat--{{ stat.tone }}">
+                <p class="stat-label">{{ stat.label }}</p>
+                <p class="stat-value">{{ stat.value }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="profile-grid">
+        <div class="profile-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Focus Areas</p>
+                    <h2>Where you invest attention</h2>
+                </div>
+            </div>
+            {% if category_breakdown %}
+                <ul class="category-breakdown">
+                    {% for category in category_breakdown %}
+                        <li>
+                            <div>
+                                <p class="category-name">{{ category.category }}</p>
+                                <p class="category-meta">{{ category.count }} dashboards</p>
+                            </div>
+                            <span class="category-pill">{{ category.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">Add dashboards to see a personalised category mix.</p>
+            {% endif %}
+        </div>
+        <div class="profile-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Badges</p>
+                    <h2>Recognition trail</h2>
+                </div>
+            </div>
+            {% if earned_badges %}
+                <div class="badge-grid">
+                    {% for badge in earned_badges %}
+                        <article class="badge-card">
+                            <div class="badge-icon">
+                                {% if badge.icon_url %}
+                                    <img src="{{ badge.icon_url }}" alt="{{ badge.name }}">
+                                {% else %}
+                                    <span>{{ badge.name[0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3>{{ badge.name }}</h3>
+                                <p>{{ badge.description }}</p>
+                                <span class="badge-date">{{ badge.awarded_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">No badges yet. Use dashboards, comparisons, and itineraries to unlock them.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <div class="profile-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Creator Log</p>
+                    <h2>Your dashboards</h2>
+                </div>
+                <a href="{{ url_for('main.add_dashboard') }}" class="btn btn-ghost">Add new</a>
+            </div>
+            {% if recent_dashboards %}
+                <div class="dashboard-grid">
+                    {% for dashboard in recent_dashboards %}
+                        <article class="dashboard-card">
+                            <div>
+                                <h3>{{ dashboard.title }}</h3>
+                                <p>{{ dashboard.country or 'Global' }} • {{ dashboard.category or 'General' }}</p>
+                            </div>
+                            <div class="dashboard-meta">
+                                <span>{{ dashboard.created_at.strftime('%b %d, %Y') }}</span>
+                                <a href="{{ url_for('main.dashboard_view', id=dashboard.id) }}" class="btn btn-primary btn-small">Open</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">You haven’t added dashboards yet. Share your first insight today.</p>
+            {% endif %}
+        </div>
+
+        <div class="profile-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Activity Stream</p>
+                    <h2>Latest signals</h2>
+                </div>
+            </div>
+            {% if recent_activity %}
+                <ul class="activity-list">
+                    {% for event in recent_activity %}
+                        <li>
+                            <div>
+                                <p class="activity-title">{{ event.action }}</p>
+                                <p class="activity-meta">{{ event.category|capitalize }}</p>
+                            </div>
+                            <span class="activity-date">{{ event.timestamp.strftime('%b %d, %Y • %H:%M') }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">Your future activity will show up here once you start exploring.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
